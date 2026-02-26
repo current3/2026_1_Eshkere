@@ -7,8 +7,7 @@
  3. [Уразгалиев Дмитрий](https://github.com/current3)
  4. [Евтович Марко](https://github.com/SSKPss4567)
 
-// TODO
-### Внешние ссылки
+### Внешние ссылки - TODO
  - [Figma]()
  - [Backend]()
  - [Deploy]()
