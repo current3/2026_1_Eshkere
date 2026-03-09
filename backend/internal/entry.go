@@ -1,4 +1,4 @@
-package handlers
+package internal
 
 import "github.com/gorilla/mux"
 

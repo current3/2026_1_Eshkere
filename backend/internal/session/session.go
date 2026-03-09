@@ -62,7 +62,7 @@ func (m *Manager) Create(w http.ResponseWriter, r *http.Request, advertiserID in
 		HttpOnly: true,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
-		//Secure:   true,
+		// Secure:   true,
 	})
 
 	return nil
@@ -87,7 +87,7 @@ func (m *Manager) Get(w http.ResponseWriter, r *http.Request) (Session, error) {
 		return Session{}, ErrSessionNotFound
 	}
 
-	//продлеваем, если пользак активен
+	//продлеваем, если пользак ватафа_к активен
 	newExpiresAt := time.Now().Add(SessionTTL)
 	session.ExpiresAt = newExpiresAt
 	m.sessions[cookie.Value] = session
@@ -121,7 +121,7 @@ func (m *Manager) Destroy(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1,
 		Expires:  time.Unix(0, 0),
 		SameSite: http.SameSiteLaxMode,
-		Secure:   false,
+		// Secure:   true,
 	})
 }
 

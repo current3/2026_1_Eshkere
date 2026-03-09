@@ -2,9 +2,12 @@
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at top, rgba(111, 103, 255, 0.12), transparent 30%),
-    linear-gradient(180deg, #eff1ff 0%, #ecefff 100%);
+  background-color: #eef0ff;
+  background-image: url("../../assets/images/back.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 .dashboard-layout__container {

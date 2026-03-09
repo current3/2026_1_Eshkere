@@ -112,6 +112,7 @@
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.72);
   box-shadow: var(--shadow);
+  position: relative;
 }
 
 .navbar__balance {
@@ -149,6 +150,184 @@
   background: linear-gradient(135deg, #ffb199, #ff5e62);
 }
 
+.navbar__profile-toggle {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid #9aa1ff;
+  background: rgba(255, 255, 255, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.navbar__profile-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.navbar__profile-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.navbar__profile-toggle svg {
+  transition: transform 0.2s ease;
+}
+
+.navbar__profile-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 280px;
+  background: #ececef;
+  border: 2px solid #141414;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(20, 20, 20, 0.14);
+  z-index: 10;
+}
+
+.navbar__profile-menu-head {
+  width: 100%;
+  min-height: 58px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 2px solid #141414;
+}
+
+.navbar__profile-menu-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: block;
+}
+
+.navbar__profile-menu-name {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar__profile-menu-arrow {
+  font-size: 34px;
+  line-height: 1;
+  color: #111;
+  transform: translateY(-1px);
+}
+
+.navbar__profile-menu-logout {
+  width: calc(100% - 44px);
+  margin: 12px 22px 14px;
+  height: 42px;
+  border-radius: 999px;
+  border: 0;
+  background: #f3c2c2;
+  color: #ff1d1d;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+
+.navbar__profile-menu-logout:hover {
+  filter: brightness(0.97);
+}
+
+.navbar__logout-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 19, 39, 0.35);
+  display: grid;
+  place-items: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.navbar__logout-modal[hidden] {
+  display: none;
+}
+
+.navbar__logout-modal-dialog {
+  width: min(560px, 100%);
+  border: 2px solid #141414;
+  border-radius: 16px;
+  background: #ececef;
+  padding: 28px 20px 26px;
+}
+
+.navbar__logout-modal-title {
+  margin: 0;
+  text-align: center;
+  font-size: 42px;
+  line-height: 1.12;
+  font-weight: 800;
+  color: #0d0f19;
+}
+
+.navbar__logout-modal-image {
+  width: min(390px, 92%);
+  margin: 16px auto 22px;
+  display: block;
+}
+
+.navbar__logout-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.navbar__logout-modal-button {
+  min-width: 126px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #2a2d37;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.navbar__logout-modal-button--yes {
+  background: linear-gradient(180deg, #ffd7d7 0%, #f3c7c7 100%);
+  color: #ff1d1d;
+  box-shadow: 0 8px 16px rgba(255, 55, 55, 0.2);
+}
+
+.navbar__logout-modal-button--no {
+  background: linear-gradient(180deg, #f4f2ff 0%, #e6e2ff 100%);
+  color: #5e45ff;
+  box-shadow: 0 8px 16px rgba(94, 69, 255, 0.18);
+}
+
+.navbar__logout-modal-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+}
+
+.navbar__logout-modal-button:active {
+  transform: translateY(0);
+}
+
+.navbar__logout-modal-button:focus-visible {
+  outline: 3px solid rgba(90, 84, 255, 0.25);
+  outline-offset: 2px;
+}
+
 @media (max-width: 900px) {
   .navbar {
     flex-direction: column;
@@ -169,6 +348,19 @@
   .navbar__actions {
     justify-content: flex-start;
   }
+
+  .navbar__profile-menu {
+    right: -6px;
+    width: 260px;
+  }
+
+  .navbar__logout-modal-title {
+    font-size: 34px;
+  }
+
+  .navbar__logout-modal-button {
+    font-size: 22px;
+  }
 }
 
 @media (max-width: 600px) {
@@ -179,5 +371,36 @@
 
   .navbar__button {
     width: 100%;
+  }
+
+  .navbar__profile-menu {
+    width: min(82vw, 280px);
+    right: 0;
+  }
+
+  .navbar__profile-menu-name {
+    font-size: 15px;
+  }
+
+  .navbar__profile-menu-logout {
+    font-size: 15px;
+  }
+
+  .navbar__logout-modal-dialog {
+    padding: 20px 12px 16px;
+  }
+
+  .navbar__logout-modal-title {
+    font-size: 28px;
+  }
+
+  .navbar__logout-modal-actions {
+    gap: 10px;
+  }
+
+  .navbar__logout-modal-button {
+    min-width: 108px;
+    height: 38px;
+    font-size: 20px;
   }
 }

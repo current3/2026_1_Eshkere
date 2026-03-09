@@ -1,4 +1,5 @@
 .campaigns-page {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -24,6 +25,16 @@
   font-weight: 600;
   background: linear-gradient(135deg, #635dff, #514bff);
   cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.campaigns-page__create-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(90, 84, 255, 0.28);
+  filter: brightness(1.03);
 }
 
 .campaigns-page__filters {
@@ -45,8 +56,274 @@
   background: rgba(255, 255, 255, 0.7);
 }
 
+.campaigns-page__date-filter {
+  min-width: 210px;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #484d60;
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+}
+
+.campaigns-page__date-filter:hover {
+  border-color: #b7bce2;
+}
+
+.campaigns-page__date-filter.is-open {
+  border-color: #7f78ff;
+}
+
 .campaigns-page__search {
   min-width: 240px;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+}
+
+.campaigns-page__search::placeholder {
+  color: #8a90a3;
+}
+
+.campaigns-page__search:focus {
+  border-color: #7f78ff;
+  background: #fff;
+}
+
+.campaigns-date-picker {
+  position: absolute;
+  top: 74px;
+  right: 0;
+  z-index: 20;
+  width: min(100%, 980px);
+  border: 1px solid #cfd3e6;
+  border-radius: 12px;
+  background: #f6f7fb;
+  box-shadow: 0 18px 35px rgba(25, 31, 73, 0.16);
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  overflow: hidden;
+}
+
+.campaigns-date-picker[hidden] {
+  display: none;
+}
+
+.campaigns-date-picker__presets {
+  background: #f1f2f7;
+  border-right: 1px solid #d8dced;
+  padding: 14px 0;
+}
+
+.campaigns-date-picker__preset {
+  width: 100%;
+  height: 56px;
+  padding: 0 20px;
+  border: 0;
+  border-top: 1px solid #d8dced;
+  color: #323646;
+  background: transparent;
+  font-size: 16px;
+  text-align: left;
+  position: relative;
+  cursor: pointer;
+}
+
+.campaigns-date-picker__preset:last-child {
+  border-bottom: 1px solid #d8dced;
+}
+
+.campaigns-date-picker__preset::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border: 3px solid #0f1014;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 16px;
+  transform: translateY(2px);
+}
+
+.campaigns-date-picker__preset.is-active {
+  background: #e7e9f2;
+}
+
+.campaigns-date-picker__preset.is-active::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0f1014;
+  position: absolute;
+  left: 27px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.campaigns-date-picker__calendar {
+  background: #f8f9fc;
+}
+
+.campaigns-date-picker__months {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.campaigns-date-picker__month {
+  border-left: 1px solid #d8dced;
+}
+
+.campaigns-date-picker__month:first-child {
+  border-left: 0;
+}
+
+.campaigns-date-picker__month-header {
+  height: 52px;
+  padding: 0 16px;
+  border-bottom: 1px solid #d8dced;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.campaigns-date-picker__month-header strong {
+  font-size: 24px;
+  color: #0f1014;
+}
+
+.campaigns-date-picker__nav {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #0f1014;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.campaigns-date-picker__nav:hover {
+  background: #eceef7;
+}
+
+.campaigns-date-picker__weekdays {
+  height: 48px;
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: center;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.campaigns-date-picker__weekdays span:last-child,
+.campaigns-date-picker__weekdays span:first-child {
+  color: #ff4d4d;
+}
+
+.campaigns-date-picker__grid {
+  padding: 0 10px 8px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.campaigns-date-picker__empty,
+.campaigns-date-picker__day {
+  width: 100%;
+  height: 46px;
+}
+
+.campaigns-date-picker__empty {
+  display: block;
+}
+
+.campaigns-date-picker__day {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 16px;
+  color: #141725;
+  cursor: pointer;
+}
+
+.campaigns-date-picker__day:hover {
+  background: #eceef7;
+}
+
+.campaigns-date-picker__day.is-in-range {
+  background: #b0aef9;
+}
+
+.campaigns-date-picker__day.is-selected {
+  background: #6f67ff;
+  color: #fff;
+}
+
+.campaigns-date-picker__footer {
+  height: 78px;
+  border-top: 1px solid #d8dced;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.campaigns-date-picker__range {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.campaigns-date-picker__range span {
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid #202126;
+  background: #fff;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #202126;
+}
+
+.campaigns-date-picker__range span:nth-child(2) {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  height: auto;
+}
+
+.campaigns-date-picker__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.campaigns-date-picker__action {
+  min-width: 124px;
+  height: 42px;
+  border-radius: 22px;
+  border: 0;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.campaigns-date-picker__action--cancel {
+  background: #ececef;
+  color: #262a37;
+}
+
+.campaigns-date-picker__action--apply {
+  background: #5c58ff;
+  color: #fff;
 }
 
 .campaigns-table {
@@ -76,6 +353,66 @@
 .campaigns-table__body .campaign-row {
   padding: 18px 20px;
   border-bottom: 1px solid #eceef6;
+}
+
+.campaigns-empty {
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 34px 20px 40px;
+}
+
+.campaigns-empty__illustration {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  display: grid;
+  place-items: center;
+}
+
+.campaigns-empty__illustration picture {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.campaigns-empty__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.campaigns-empty__title {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #101327;
+}
+
+.campaigns-empty__create-button {
+  height: 44px;
+  padding: 0 22px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #635dff, #514bff);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.campaigns-empty__create-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(90, 84, 255, 0.28);
+  filter: brightness(1.03);
 }
 
 .campaign-row__name {
@@ -238,4 +575,83 @@
     flex-direction: column;
     align-items: stretch;
   }
+
+  .campaigns-date-picker {
+    position: static;
+    grid-template-columns: 1fr;
+  }
+
+  .campaigns-date-picker__presets {
+    border-right: 0;
+    border-bottom: 1px solid #d8dced;
+  }
+
+  .campaigns-date-picker__preset {
+    font-size: 15px;
+  }
+
+  .campaigns-date-picker__month-header strong {
+    font-size: 20px;
+  }
+
+  .campaigns-date-picker__weekdays {
+    font-size: 13px;
+  }
+
+  .campaigns-date-picker__day {
+    font-size: 15px;
+    height: 38px;
+  }
+
+  .campaigns-date-picker__range span,
+  .campaigns-date-picker__action {
+    font-size: 14px;
+  }
+
+  .campaigns-empty__title {
+    font-size: 36px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .campaigns-page__filters {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .campaigns-page__date-filter,
+  .campaigns-page__filter,
+  .campaigns-page__search {
+    width: 100%;
+  }
+
+  .campaigns-date-picker__months {
+    grid-template-columns: 1fr;
+  }
+
+  .campaigns-date-picker__month:nth-child(2) {
+    border-top: 1px solid #d8dced;
+  }
+
+  .campaigns-date-picker__footer {
+    height: auto;
+    padding: 10px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .campaigns-empty {
+    min-height: 420px;
+  }
+
+  .campaigns-empty__illustration {
+    width: 240px;
+    height: 240px;
+  }
+
+  .campaigns-empty__title {
+    font-size: 30px;
+  }
+
 }

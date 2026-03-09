@@ -2,6 +2,28 @@ import { request } from "../utils/request.js";
 
 const AUTH_KEY = "ads_auth";
 
+/**
+ * @typedef {Object} User
+ * @property {string} [id]
+ * @property {string} [email]
+ * @property {string} [phone]
+ * @property {string} [name]
+ * @property {number} [balance]
+ * @property {string} [avatar]
+ */
+
+/**
+ * @typedef {Object} AuthResult
+ * @property {boolean} ok - Флаг результата операции.
+ * @property {User} [user] - Данные пользователя при успешной операции.
+ * @property {string} [message] - Описание ошибки при неуспешной операции.
+ */
+
+/**
+ * Читает текущего пользователя из localStorage.
+ *
+ * @returns {User|null} Объект авторизованного пользователя или `null`.
+ */
 export function getCurrentUser() {
   const raw = localStorage.getItem(AUTH_KEY);
 
@@ -16,24 +38,49 @@ export function getCurrentUser() {
   }
 }
 
+/**
+ * Проверяет, авторизован ли пользователь на фронтенде.
+ *
+ * @returns {boolean} `true`, если данные пользователя есть в localStorage.
+ */
 export function isAuthenticated() {
   return Boolean(getCurrentUser());
 }
 
+/**
+ * Регистрирует нового пользователя в backend и возвращает нормализованный результат.
+ *
+ * @param {{ email: string, phone: string, password: string }} params - Параметры регистрации.
+ * @returns {Promise<AuthResult>} Результат операции регистрации.
+ */
 export async function registerUser({ email, phone, password }) {
   try {
-    const response = await request("/advertiser/register", {
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPhone = phone.trim();
+    const normalizedPassword = password.trim();
+
+    await request("/advertiser/register", {
       method: "POST",
       body: JSON.stringify({
-        email: email.trim().toLowerCase(),
-        phone: phone.trim(),
-        password: password.trim()
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        password: normalizedPassword
       })
     });
 
+    const loginResponse = await request("/advertiser/login", {
+      method: "POST",
+      body: JSON.stringify({
+        identifier: normalizedEmail,
+        password: normalizedPassword
+      })
+    });
+
+    localStorage.setItem(AUTH_KEY, JSON.stringify(loginResponse.data));
+
     return {
       ok: true,
-      user: response.data
+      user: loginResponse.data
     };
   } catch (error) {
     return {
@@ -43,6 +90,12 @@ export async function registerUser({ email, phone, password }) {
   }
 }
 
+/**
+ * Авторизует пользователя и сохраняет данные сессии в localStorage.
+ *
+ * @param {{ identifier: string, password: string }} params - Параметры входа.
+ * @returns {Promise<AuthResult>} Результат операции входа.
+ */
 export async function loginUser({ identifier, password }) {
   try {
     const response = await request("/advertiser/login", {
@@ -67,6 +120,11 @@ export async function loginUser({ identifier, password }) {
   }
 }
 
+/**
+ * Выполняет выход пользователя и очищает клиентский кэш авторизации.
+ *
+ * @returns {Promise<{ ok: boolean, message?: string }>} Результат операции выхода.
+ */
 export async function logoutUser() {
   try {
     await request("/advertiser/logout", {

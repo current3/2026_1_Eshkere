@@ -11,6 +11,11 @@ import {
 } from "../../assets/js/utils/validators.js";
 import { registerUser } from "../../assets/js/services/auth.service.js";
 
+/**
+ * Рендерит содержимое страницы регистрации и оборачивает его в публичный layout.
+ *
+ * @returns {Promise<string>} Сгенерированная строка HTML.
+ */
 export async function renderRegisterPage() {
   const emailField = await renderFormField({
     id: "register-email",
@@ -72,12 +77,22 @@ export async function renderRegisterPage() {
   return await renderPublicLayout(content, "/register");
 }
 
+/**
+ * Подключает валидацию и обработчики submit для формы регистрации.
+ *
+ * @returns {void}
+ */
 export function initRegisterPage() {
   const form = document.getElementById("register-form");
 
   if (!form) {
     return;
   }
+
+  const submitButton = form.querySelector('button[type="submit"]');
+  const SUBMIT_DEBOUNCE_MS = 400;
+  let submitDebounceTimer = null;
+  let isSubmitting = false;
 
   function validateEmailField() {
     const error = validateEmail(form.elements.email.value);
@@ -115,8 +130,10 @@ export function initRegisterPage() {
   });
   form.elements.repeatPassword.addEventListener("input", validateRepeatPasswordField);
 
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  async function handleRegisterSubmit() {
+    if (isSubmitting) {
+      return;
+    }
 
     const isEmailValid = validateEmailField();
     const isPhoneValid = validatePhoneField();
@@ -127,17 +144,38 @@ export function initRegisterPage() {
       return;
     }
 
-    const result = await registerUser({
-      email: form.elements.email.value,
-      phone: form.elements.phone.value,
-      password: form.elements.password.value
-    });
-
-    if (!result.ok) {
-      setFieldState(form, "email", result.message);
-      return;
+    isSubmitting = true;
+    if (submitButton) {
+      submitButton.disabled = true;
     }
 
-    location.hash = "#/ads";
+    try {
+      const result = await registerUser({
+        email: form.elements.email.value,
+        phone: form.elements.phone.value,
+        password: form.elements.password.value
+      });
+
+      if (!result.ok) {
+        setFieldState(form, "email", result.message);
+        return;
+      }
+
+      location.hash = "#/ads";
+    } finally {
+      isSubmitting = false;
+      if (submitButton) {
+        submitButton.disabled = false;
+      }
+    }
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    clearTimeout(submitDebounceTimer);
+    submitDebounceTimer = setTimeout(() => {
+      handleRegisterSubmit();
+    }, SUBMIT_DEBOUNCE_MS);
   });
 }

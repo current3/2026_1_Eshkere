@@ -9,6 +9,11 @@ import {
 } from "../../assets/js/utils/validators.js";
 import { loginUser } from "../../assets/js/services/auth.service.js";
 
+/**
+ * Рендерит содержимое страницы входа и оборачивает его в публичный layout.
+ *
+ * @returns {Promise<string>} Сгенерированная строка HTML.
+ */
 export async function renderLoginPage() {
   const loginField = await renderFormField({
     id: "login-email",
@@ -50,6 +55,11 @@ export async function renderLoginPage() {
   return await renderPublicLayout(content, "/login");
 }
 
+/**
+ * Подключает валидацию и обработчики submit для формы входа.
+ *
+ * @returns {void}
+ */
 export function initLoginPage() {
   const form = document.getElementById("login-form");
 

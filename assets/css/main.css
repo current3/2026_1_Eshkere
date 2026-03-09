@@ -22,6 +22,7 @@
 
 :root {
   --bg-main: #eef0ff;
+  --bg-main-image: url("../images/back.png");
   --text-main: #1f2430;
   --text-muted: #7a8094;
   --border: #d9ddee;
@@ -33,11 +34,18 @@
 html,
 body {
   min-height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   font-family: "Roboto", sans-serif;
-  background: var(--bg-main);
+  background-color: var(--bg-main);
+  background-image: var(--bg-main-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--text-main);
 }
 

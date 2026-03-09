@@ -1,0 +1,2 @@
+coverage:
+	go cover -v

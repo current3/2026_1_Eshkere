@@ -1,5 +1,20 @@
 import { renderTemplate } from "../../assets/js/utils/render.js";
 
+/**
+ * Рендерит переиспользуемый компонент поля формы.
+ *
+ * @param {Object} [options={}]
+ * @param {string} [options.label]
+ * @param {string} [options.id]
+ * @param {string} [options.name]
+ * @param {string} [options.type]
+ * @param {string} [options.placeholder]
+ * @param {string} [options.value]
+ * @param {string} [options.className]
+ * @param {boolean} [options.required]
+ * @param {boolean} [options.disabled]
+ * @returns {Promise<string>} Сгенерированная строка HTML.
+ */
 export async function renderFormField(options = {}) {
 
   return await renderTemplate("./components/form-field/form-field.hbs", {

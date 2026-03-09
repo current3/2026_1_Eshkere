@@ -1,4 +1,4 @@
-package dto
+package internal
 
 type AdResponse struct {
 	ID          int    `json:"id"`

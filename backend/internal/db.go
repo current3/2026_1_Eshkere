@@ -1,14 +1,13 @@
-package app
+package internal
 
 import (
 	"database/sql"
-	"eshkere/internal/config"
 	"fmt"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-func initDB(cfg config.PostgresConfig) (*sql.DB, error) {
+func initDB(cfg PostgresConfig) (*sql.DB, error) {
 	dataSource := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable target_session_attrs=read-write statement_cache_mode=describe",
 		cfg.Host,

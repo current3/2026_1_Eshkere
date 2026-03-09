@@ -1,11 +1,8 @@
-package app
+package internal
 
 import (
 	"context"
 	"database/sql"
-	"eshkere/internal/config"
-	handlers "eshkere/internal/handler"
-	"eshkere/internal/middleware"
 	"eshkere/internal/session"
 	"fmt"
 	"log"
@@ -19,7 +16,7 @@ import (
 )
 
 type App struct {
-	cfg            *config.Config
+	cfg            *Config
 	db             *sql.DB
 	sessionManager *session.Manager
 	// TODO: closers []io.Closer
@@ -27,7 +24,7 @@ type App struct {
 }
 
 func New(configPath string) *App {
-	cfg, err := config.ReadConfig(configPath)
+	cfg, err := ReadConfig(configPath)
 	if err != nil {
 		log.Fatalf("Failed to read config: %v", err)
 	}
@@ -50,13 +47,14 @@ func New(configPath string) *App {
 func (a *App) Run() error {
 	router := mux.NewRouter().StrictSlash(true)
 
-	handlers.Register(router, handlers.NewAPI(handlers.APIConfig{
+	Register(router, NewAPI(APIConfig{
+		// Service: svc,
 		SessionManager: a.sessionManager,
 	}))
 
 	server := &http.Server{
 		Addr:         a.cfg.HTTPServer.Listen,
-		Handler:      middleware.CORS(a.cfg.CORS.AllowedOrigins)(router),
+		Handler:      CORS(a.cfg.CORS.AllowedOrigins)(router),
 		ReadTimeout:  a.cfg.HTTPServer.ReadTimeout,
 		WriteTimeout: a.cfg.HTTPServer.WriteTimeout,
 	}
@@ -65,7 +63,6 @@ func (a *App) Run() error {
 
 	go func() {
 		log.Printf("server started on %s", server.Addr)
-		log.Printf("allowed origins: %#v", a.cfg.CORS.AllowedOrigins)
 		serverErr <- server.ListenAndServe()
 	}()
 
