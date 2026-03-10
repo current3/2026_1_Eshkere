@@ -16,7 +16,6 @@ import { renderTemplate } from "../../assets/js/utils/render.js";
  * @returns {Promise<string>} Сгенерированная строка HTML.
  */
 export async function renderFormField(options = {}) {
-
   return await renderTemplate("./components/form-field/form-field.hbs", {
     label: options.label || "",
     id: options.id || "",
@@ -25,6 +24,8 @@ export async function renderFormField(options = {}) {
     placeholder: options.placeholder || "",
     value: options.value || "",
     className: options.className || "",
+    prefix: options.prefix || "",
+    hasPrefix: Boolean(options.prefix),
     required: options.required || false,
     disabled: options.disabled || false
   });

@@ -3,16 +3,22 @@
     {{label}}{{#if required}}<span></span>{{/if}}
   </label>
 
-  <input
-    class="ui-input {{className}}"
-    id="{{id}}"
-    name="{{name}}"
-    type="{{type}}"
-    placeholder="{{placeholder}}"
-    value="{{value}}"
-    {{#if required}}required{{/if}}
-    {{#if disabled}}disabled{{/if}}
-  />
+  <div class="ui-field__control{{#if hasPrefix}} ui-field__control--with-prefix{{/if}}">
+    {{#if hasPrefix}}
+      <span class="ui-field__prefix">{{prefix}}</span>
+    {{/if}}
+
+    <input
+      class="ui-input {{className}}{{#if hasPrefix}} ui-input--with-prefix{{/if}}"
+      id="{{id}}"
+      name="{{name}}"
+      type="{{type}}"
+      placeholder="{{placeholder}}"
+      value="{{value}}"
+      {{#if required}}required{{/if}}
+      {{#if disabled}}disabled{{/if}}
+    />
+  </div>
 
   <p class="ui-field__error" data-error-for="{{name}}"></p>
 </div>

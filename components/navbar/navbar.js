@@ -33,12 +33,26 @@ export async function renderNavbar(pathname = "/") {
  * @returns {void}
  */
 export function initNavbar() {
+  const navbar = document.querySelector(".navbar");
   const profileToggleButton = document.getElementById("navbar-profile-toggle");
   const profileMenu = document.getElementById("navbar-profile-menu");
   const logoutButton = document.getElementById("navbar-logout-button");
   const logoutModal = document.getElementById("navbar-logout-modal");
   const logoutConfirmButton = document.getElementById("navbar-logout-confirm");
   const logoutCancelButton = document.getElementById("navbar-logout-cancel");
+
+  if (logoutModal && logoutModal.parentElement !== document.body) {
+    document.body.appendChild(logoutModal);
+  }
+
+  if (navbar) {
+    const syncScrollState = () => {
+      navbar.classList.toggle("is-scrolled", window.scrollY > 12);
+    };
+
+    syncScrollState();
+    window.addEventListener("scroll", syncScrollState, { passive: true });
+  }
 
   if (
     !profileToggleButton ||

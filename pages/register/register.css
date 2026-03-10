@@ -86,6 +86,16 @@
   cursor: pointer;
 }
 
+.social-button:disabled,
+.social-button[aria-disabled="true"] {
+  color: #9aa0b3;
+  background: rgba(255, 255, 255, 0.42);
+  border-color: #d9dceb;
+  cursor: not-allowed;
+  opacity: 0.72;
+  filter: grayscale(0.15);
+}
+
 @media (max-width: 900px) {
   .auth-card__title {
     font-size: 34px;

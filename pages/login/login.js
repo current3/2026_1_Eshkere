@@ -9,6 +9,10 @@ import {
 } from "../../assets/js/utils/validators.js";
 import { loginUser } from "../../assets/js/services/auth.service.js";
 
+function sanitizePasswordInput(value) {
+  return value.replace(/\s+/g, "");
+}
+
 /**
  * Рендерит содержимое страницы входа и оборачивает его в публичный layout.
  *
@@ -20,7 +24,7 @@ export async function renderLoginPage() {
     name: "email",
     type: "text",
     label: "Электронная почта или телефон",
-    placeholder: "Ваш логин",
+    placeholder: "name@example.com или +7 999 123 45 67",
     required: true
   });
 
@@ -29,7 +33,7 @@ export async function renderLoginPage() {
     name: "password",
     type: "password",
     label: "Пароль",
-    placeholder: "Ваш пароль",
+    placeholder: "Например, Qwerty123!",
     required: true
   });
 
@@ -80,7 +84,10 @@ export function initLoginPage() {
   }
 
   form.elements.email.addEventListener("input", validateLoginField);
-  form.elements.password.addEventListener("input", validatePasswordField);
+  form.elements.password.addEventListener("input", () => {
+    form.elements.password.value = sanitizePasswordInput(form.elements.password.value);
+    validatePasswordField();
+  });
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -98,8 +105,8 @@ export function initLoginPage() {
     });
 
     if (!result.ok) {
-      setFieldState(form, "email", result.message);
-      setFieldState(form, "password", " ");
+      setFieldState(form, "email", "");
+      setFieldState(form, "password", result.message);
       return;
     }
 

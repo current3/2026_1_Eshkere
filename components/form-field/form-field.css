@@ -19,6 +19,19 @@
   color: #ff5f56;
 }
 
+.ui-field__control {
+  position: relative;
+}
+
+.ui-field__prefix {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: #2d3345;
+  font-weight: 600;
+  pointer-events: none;
+}
 
 .ui-input {
   width: 100%;
@@ -29,6 +42,10 @@
   background: rgba(255, 255, 255, 0.78);
   outline: none;
   transition: 0.2s ease;
+}
+
+.ui-input--with-prefix {
+  padding-left: 52px;
 }
 
 .ui-input:focus {

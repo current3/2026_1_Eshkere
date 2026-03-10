@@ -2,6 +2,53 @@ import { request } from "../utils/request.js";
 
 const AUTH_KEY = "ads_auth";
 
+function normalizeAuthErrorMessage(message) {
+  const normalized = String(message || "").trim().toLowerCase();
+
+  if (!normalized) {
+    return "Не удалось выполнить запрос. Попробуйте еще раз.";
+  }
+
+  if (
+    normalized.includes("failed to fetch") ||
+    normalized.includes("networkerror") ||
+    normalized.includes("load failed")
+  ) {
+    return "Не удалось подключиться к серверу. Попробуйте еще раз.";
+  }
+
+  if (
+    normalized.includes("invalid credentials") ||
+    normalized.includes("unauthorized") ||
+    normalized.includes("неверн") ||
+    normalized.includes("invalid password")
+  ) {
+    return "Неверная электронная почта, телефон или пароль.";
+  }
+
+  if (
+    normalized.includes("already exists") ||
+    normalized.includes("уже существует") ||
+    normalized.includes("already registered")
+  ) {
+    return "Пользователь с такими данными уже зарегистрирован.";
+  }
+
+  if (normalized.includes("email")) {
+    return "Проверьте электронную почту.";
+  }
+
+  if (normalized.includes("phone") || normalized.includes("телефон")) {
+    return "Проверьте номер телефона.";
+  }
+
+  if (normalized.includes("password") || normalized.includes("парол")) {
+    return "Проверьте пароль.";
+  }
+
+  return message;
+}
+
 /**
  * @typedef {Object} User
  * @property {string} [id]
@@ -85,7 +132,7 @@ export async function registerUser({ email, phone, password }) {
   } catch (error) {
     return {
       ok: false,
-      message: error.message
+      message: normalizeAuthErrorMessage(error.message)
     };
   }
 }
@@ -115,7 +162,7 @@ export async function loginUser({ identifier, password }) {
   } catch (error) {
     return {
       ok: false,
-      message: error.message
+      message: normalizeAuthErrorMessage(error.message)
     };
   }
 }
@@ -137,7 +184,7 @@ export async function logoutUser() {
   } catch (error) {
     return {
       ok: false,
-      message: error.message
+      message: normalizeAuthErrorMessage(error.message)
     };
   } finally {
     localStorage.removeItem(AUTH_KEY);

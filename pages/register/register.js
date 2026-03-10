@@ -11,6 +11,45 @@ import {
 } from "../../assets/js/utils/validators.js";
 import { registerUser } from "../../assets/js/services/auth.service.js";
 
+function normalizePhoneInput(value) {
+  return value.replace(/\D/g, "").slice(0, 10);
+}
+
+function sanitizePasswordInput(value) {
+  return value.replace(/\s+/g, "");
+}
+
+function toFullPhone(value) {
+  const digits = normalizePhoneInput(value);
+  return digits ? `+7${digits}` : "";
+}
+
+function applyRegisterServerError(form, message) {
+  const normalized = String(message || "").toLowerCase();
+
+  setFieldState(form, "email", "");
+  setFieldState(form, "phone", "");
+  setFieldState(form, "password", "");
+  setFieldState(form, "repeatPassword", "");
+
+  if (normalized.includes("почт")) {
+    setFieldState(form, "email", message);
+    return;
+  }
+
+  if (normalized.includes("телефон")) {
+    setFieldState(form, "phone", message);
+    return;
+  }
+
+  if (normalized.includes("парол")) {
+    setFieldState(form, "password", message);
+    return;
+  }
+
+  setFieldState(form, "email", message);
+}
+
 /**
  * Рендерит содержимое страницы регистрации и оборачивает его в публичный layout.
  *
@@ -22,7 +61,7 @@ export async function renderRegisterPage() {
     name: "email",
     type: "email",
     label: "Электронная почта",
-    placeholder: "Ваш логин",
+    placeholder: "name@example.com",
     required: true
   });
 
@@ -31,7 +70,8 @@ export async function renderRegisterPage() {
     name: "phone",
     type: "text",
     label: "Телефон",
-    placeholder: "+7 000 000 0000",
+    placeholder: "999 123 45 67",
+    prefix: "+7",
     required: true
   });
 
@@ -40,7 +80,7 @@ export async function renderRegisterPage() {
     name: "password",
     type: "password",
     label: "Пароль",
-    placeholder: "Ваш пароль",
+    placeholder: "Например, Qwerty123!",
     required: true
   });
 
@@ -49,7 +89,7 @@ export async function renderRegisterPage() {
     name: "repeatPassword",
     type: "password",
     label: "Повторите пароль",
-    placeholder: "Ваш пароль",
+    placeholder: "Повторите Qwerty123!",
     required: true
   });
 
@@ -101,7 +141,7 @@ export function initRegisterPage() {
   }
 
   function validatePhoneField() {
-    const error = validatePhone(form.elements.phone.value);
+    const error = validatePhone(toFullPhone(form.elements.phone.value));
     setFieldState(form, "phone", error);
     return !error;
   }
@@ -123,12 +163,19 @@ export function initRegisterPage() {
   }
 
   form.elements.email.addEventListener("input", validateEmailField);
-  form.elements.phone.addEventListener("input", validatePhoneField);
+  form.elements.phone.addEventListener("input", () => {
+    form.elements.phone.value = normalizePhoneInput(form.elements.phone.value);
+    validatePhoneField();
+  });
   form.elements.password.addEventListener("input", () => {
+    form.elements.password.value = sanitizePasswordInput(form.elements.password.value);
     validatePasswordField();
     validateRepeatPasswordField();
   });
-  form.elements.repeatPassword.addEventListener("input", validateRepeatPasswordField);
+  form.elements.repeatPassword.addEventListener("input", () => {
+    form.elements.repeatPassword.value = sanitizePasswordInput(form.elements.repeatPassword.value);
+    validateRepeatPasswordField();
+  });
 
   async function handleRegisterSubmit() {
     if (isSubmitting) {
@@ -152,12 +199,12 @@ export function initRegisterPage() {
     try {
       const result = await registerUser({
         email: form.elements.email.value,
-        phone: form.elements.phone.value,
+        phone: toFullPhone(form.elements.phone.value),
         password: form.elements.password.value
       });
 
       if (!result.ok) {
-        setFieldState(form, "email", result.message);
+        applyRegisterServerError(form, result.message);
         return;
       }
 
