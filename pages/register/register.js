@@ -18,6 +18,17 @@ function normalizePhoneInput(value) {
   return value.replace(/\D/g, "").slice(0, 10);
 }
 
+function formatPhoneInput(value) {
+  const digits = normalizePhoneInput(value);
+
+  const part1 = digits.slice(0, 3);
+  const part2 = digits.slice(3, 6);
+  const part3 = digits.slice(6, 8);
+  const part4 = digits.slice(8, 10);
+
+  return [part1, part2, part3, part4].filter(Boolean).join(" ");
+}
+
 function sanitizePasswordInput(value) {
   return value.replace(/\s+/g, "");
 }
@@ -169,7 +180,7 @@ export function initRegisterPage() {
 
   form.elements.email.addEventListener("input", validateEmailField);
   form.elements.phone.addEventListener("input", () => {
-    form.elements.phone.value = normalizePhoneInput(form.elements.phone.value);
+    form.elements.phone.value = formatPhoneInput(form.elements.phone.value);
     validatePhoneField();
   });
   form.elements.password.addEventListener("input", () => {
