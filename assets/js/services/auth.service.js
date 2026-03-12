@@ -1,49 +1,78 @@
-import { request } from "../utils/request.js";
+import {request} from '../utils/request.js';
+import {normalizePhone} from '../utils/validators.js';
 
-const AUTH_KEY = "ads_auth";
+const AUTH_KEY = 'ads_auth';
+let confirmedSession = false;
 
+/**
+ * Нормализует текст ошибки авторизации для UI.
+ *
+ * @param {string} message Исходное сообщение об ошибке.
+ * @return {string} Нормализованный текст ошибки.
+ */
 function normalizeAuthErrorMessage(message) {
-  const normalized = String(message || "").trim().toLowerCase();
+  const normalized = String(message || '').trim().toLowerCase();
 
   if (!normalized) {
-    return "Не удалось выполнить запрос. Попробуйте еще раз.";
+    return 'Не удалось выполнить запрос. Попробуйте еще раз.';
   }
 
   if (
-    normalized.includes("failed to fetch") ||
-    normalized.includes("networkerror") ||
-    normalized.includes("load failed")
+    normalized.includes('failed to fetch') ||
+    normalized.includes('networkerror') ||
+    normalized.includes('load failed')
   ) {
-    return "Не удалось подключиться к серверу. Попробуйте еще раз.";
+    return 'Не удалось подключиться к серверу. Попробуйте еще раз.';
   }
 
   if (
-    normalized.includes("invalid credentials") ||
-    normalized.includes("unauthorized") ||
-    normalized.includes("неверн") ||
-    normalized.includes("invalid password")
+    normalized.includes('invalid credentials') ||
+    normalized.includes('invalid identifier or password') ||
+    normalized.includes('unauthorized') ||
+    normalized.includes('неверно') ||
+    normalized.includes('invalid password')
   ) {
-    return "Неверная электронная почта, телефон или пароль.";
+    return 'Такого пользователя не существует или пароль неверный.';
   }
 
   if (
-    normalized.includes("already exists") ||
-    normalized.includes("уже существует") ||
-    normalized.includes("already registered")
+    normalized.includes('already exists') ||
+    normalized.includes('уже существует') ||
+    normalized.includes('already registered')
   ) {
-    return "Пользователь с такими данными уже зарегистрирован.";
+    return 'Пользователь с такими данными уже зарегистрирован.';
   }
 
-  if (normalized.includes("email")) {
-    return "Проверьте электронную почту.";
+  if (
+    normalized.includes('invalid request') ||
+    normalized.includes('bad request')
+  ) {
+    return 'Проверьте корректность введённых данных.';
   }
 
-  if (normalized.includes("phone") || normalized.includes("телефон")) {
-    return "Проверьте номер телефона.";
+  if (
+    normalized.includes('session not found') ||
+    normalized.includes('сесс') && normalized.includes('не найден')
+  ) {
+    return 'Сессия истекла. Войдите снова.';
   }
 
-  if (normalized.includes("password") || normalized.includes("парол")) {
-    return "Проверьте пароль.";
+  if (normalized.includes('email')) {
+    return 'Проверьте электронную почту.';
+  }
+
+  if (
+    normalized.includes('phone') ||
+    normalized.includes('телефон')
+  ) {
+    return 'Проверьте номер телефона.';
+  }
+
+  if (
+    normalized.includes('password') ||
+    normalized.includes('пароль')
+  ) {
+    return 'Проверьте пароль.';
   }
 
   return message;
@@ -61,17 +90,17 @@ function normalizeAuthErrorMessage(message) {
 
 /**
  * @typedef {Object} AuthResult
- * @property {boolean} ok - Флаг результата операции.
- * @property {User} [user] - Данные пользователя при успешной операции.
- * @property {string} [message] - Описание ошибки при неуспешной операции.
+ * @property {boolean} ok
+ * @property {User} [user]
+ * @property {string} [message]
  */
 
 /**
- * Читает текущего пользователя из localStorage.
+ * Читает пользователя из локального хранилища.
  *
- * @returns {User|null} Объект авторизованного пользователя или `null`.
+ * @return {User|null} Сохраненный пользователь или null.
  */
-export function getCurrentUser() {
+function readStoredUser() {
   const raw = localStorage.getItem(AUTH_KEY);
 
   if (!raw) {
@@ -86,107 +115,199 @@ export function getCurrentUser() {
 }
 
 /**
- * Проверяет, авторизован ли пользователь на фронтенде.
+ * Сохраняет пользователя в локальном хранилище.
  *
- * @returns {boolean} `true`, если данные пользователя есть в localStorage.
+ * @param {User} user Пользователь для сохранения.
+ * @return {void}
  */
-export function isAuthenticated() {
-  return Boolean(getCurrentUser());
+function writeStoredUser(user) {
+  localStorage.setItem(AUTH_KEY, JSON.stringify(user));
 }
 
 /**
- * Регистрирует нового пользователя в backend и возвращает нормализованный результат.
+ * Проверяет наличие локально сохраненного пользователя.
  *
- * @param {{ email: string, phone: string, password: string }} params - Параметры регистрации.
- * @returns {Promise<AuthResult>} Результат операции регистрации.
+ * @return {boolean} Есть ли кэш auth-данных.
  */
-export async function registerUser({ email, phone, password }) {
+function hasStoredAuth() {
+  return Boolean(readStoredUser());
+}
+
+/**
+ * Читает текущего пользователя из localStorage.
+ *
+ * @return {User|null} Пользователь из localStorage или null.
+ */
+export function getCurrentUser() {
+  return readStoredUser();
+}
+
+/**
+ * Показывает, подтверждена ли авторизация сервером.
+ *
+ * @return {boolean} Подтверждено ли auth-состояние сервером.
+ */
+export function isAuthenticated() {
+  return confirmedSession;
+}
+
+/**
+ * Очищает локальное auth-состояние.
+ *
+ * @return {void}
+ */
+export function clearAuthState() {
+  localStorage.removeItem(AUTH_KEY);
+  confirmedSession = false;
+}
+
+/**
+ * Подтверждает локальное состояние через серверную сессию.
+ *
+ * @return {Promise<boolean>} Признак активной серверной сессии.
+ */
+export async function initializeAuthState() {
+  if (!hasStoredAuth()) {
+    confirmedSession = false;
+    return false;
+  }
+
+  const sessionIsActive = await hasActiveSession();
+  confirmedSession = sessionIsActive;
+
+  if (!sessionIsActive) {
+    clearAuthState();
+  }
+
+  return sessionIsActive;
+}
+
+/**
+ * Проверяет активность серверной сессии.
+ *
+ * @return {Promise<boolean>} Признак активной серверной сессии.
+ */
+export async function hasActiveSession() {
+  if (!hasStoredAuth()) {
+    confirmedSession = false;
+    return false;
+  }
+
+  try {
+    await request('/ads', {
+      method: 'GET',
+    });
+
+    confirmedSession = true;
+    return true;
+  } catch (error) {
+    const message = String(error?.message || '').toLowerCase();
+
+    if (
+      message.includes('unauthorized') ||
+      message.includes('не авториз')
+    ) {
+      clearAuthState();
+      return false;
+    }
+
+    confirmedSession = hasStoredAuth();
+    return confirmedSession;
+  }
+}
+
+/**
+ * Регистрирует пользователя и сохраняет подтвержденную сессию.
+ *
+ * @param {{email: string, phone: string, password: string}} params
+ *     Параметры регистрации.
+ * @return {Promise<AuthResult>} Результат регистрации.
+ */
+export async function registerUser({email, phone, password}) {
   try {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPhone = phone.trim();
     const normalizedPassword = password.trim();
 
-    await request("/advertiser/register", {
-      method: "POST",
+    const registerResponse = await request('/advertiser/register', {
+      method: 'POST',
       body: JSON.stringify({
         email: normalizedEmail,
         phone: normalizedPhone,
-        password: normalizedPassword
-      })
+        password: normalizedPassword,
+      }),
     });
 
-    const loginResponse = await request("/advertiser/login", {
-      method: "POST",
-      body: JSON.stringify({
-        identifier: normalizedEmail,
-        password: normalizedPassword
-      })
-    });
-
-    localStorage.setItem(AUTH_KEY, JSON.stringify(loginResponse.data));
+    writeStoredUser(registerResponse.data);
+    confirmedSession = true;
 
     return {
       ok: true,
-      user: loginResponse.data
+      user: registerResponse.data,
     };
   } catch (error) {
     return {
       ok: false,
-      message: normalizeAuthErrorMessage(error.message)
+      message: normalizeAuthErrorMessage(error.message),
     };
   }
 }
 
 /**
- * Авторизует пользователя и сохраняет данные сессии в localStorage.
+ * Авторизует пользователя и сохраняет подтвержденную сессию.
  *
- * @param {{ identifier: string, password: string }} params - Параметры входа.
- * @returns {Promise<AuthResult>} Результат операции входа.
+ * @param {{identifier: string, password: string}} params Параметры входа.
+ * @return {Promise<AuthResult>} Результат входа.
  */
-export async function loginUser({ identifier, password }) {
+export async function loginUser({identifier, password}) {
   try {
-    const response = await request("/advertiser/login", {
-      method: "POST",
+    const normalizedIdentifier = normalizePhone(identifier) ||
+      identifier.trim();
+
+    const response = await request('/advertiser/login', {
+      method: 'POST',
       body: JSON.stringify({
-        identifier: identifier.trim(),
-        password: password.trim()
-      })
+        identifier: normalizedIdentifier,
+        password: password.trim(),
+      }),
     });
 
-    localStorage.setItem(AUTH_KEY, JSON.stringify(response.data));
+    writeStoredUser(response.data);
+    confirmedSession = true;
 
     return {
       ok: true,
-      user: response.data
+      user: response.data,
     };
   } catch (error) {
     return {
       ok: false,
-      message: normalizeAuthErrorMessage(error.message)
+      message: normalizeAuthErrorMessage(error.message),
     };
   }
 }
 
 /**
- * Выполняет выход пользователя и очищает клиентский кэш авторизации.
+ * Выполняет выход пользователя.
  *
- * @returns {Promise<{ ok: boolean, message?: string }>} Результат операции выхода.
+ * @return {Promise<{ok: boolean, message: (string|undefined)}>}
+ *     Результат выхода.
  */
 export async function logoutUser() {
   try {
-    await request("/advertiser/logout", {
-      method: "POST"
+    await request('/advertiser/logout', {
+      method: 'POST',
     });
 
     return {
-      ok: true
+      ok: true,
     };
   } catch (error) {
     return {
       ok: false,
-      message: normalizeAuthErrorMessage(error.message)
+      message: normalizeAuthErrorMessage(error.message),
     };
   } finally {
-    localStorage.removeItem(AUTH_KEY);
+    clearAuthState();
   }
 }

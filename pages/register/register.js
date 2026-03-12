@@ -1,143 +1,163 @@
-import { renderTemplate } from "../../assets/js/utils/render.js";
-import { renderPublicLayout } from "../../layouts/public/public-layout.js";
+import {renderTemplate} from '../../assets/js/utils/render.js';
+import {renderPublicLayout} from '../../layouts/public/public-layout.js';
 import {
   renderFormField,
-  initPasswordVisibilityToggles
-} from "../../components/form-field/form-field.js";
-import { renderButton } from "../../components/button/button.js";
+  initPasswordVisibilityToggles,
+} from '../../components/form-field/form-field.js';
+import {renderButton} from '../../components/button/button.js';
 import {
+  normalizePhone,
   validateEmail,
   validatePhone,
   validatePassword,
   validateRepeatPassword,
-  setFieldState
-} from "../../assets/js/utils/validators.js";
-import { registerUser } from "../../assets/js/services/auth.service.js";
+  setFieldState,
+} from '../../assets/js/utils/validators.js';
+import {registerUser} from '../../assets/js/services/auth.service.js';
 
+/**
+ * Оставляет только 10 цифр локального номера телефона.
+ *
+ * @param {string} value Исходное значение поля.
+ * @return {string} Строка из цифр.
+ */
 function normalizePhoneInput(value) {
-  return value.replace(/\D/g, "").slice(0, 10);
+  return value.replace(/\D/g, '').slice(0, 10);
 }
 
+/**
+ * Форматирует локальный номер телефона по маске.
+ *
+ * @param {string} value Исходное значение.
+ * @return {string} Отформатированный номер.
+ */
 function formatPhoneInput(value) {
   const digits = normalizePhoneInput(value);
-
   const part1 = digits.slice(0, 3);
   const part2 = digits.slice(3, 6);
   const part3 = digits.slice(6, 8);
   const part4 = digits.slice(8, 10);
 
-  return [part1, part2, part3, part4].filter(Boolean).join(" ");
-}
-
-function sanitizePasswordInput(value) {
-  return value.replace(/\s+/g, "");
-}
-
-function toFullPhone(value) {
-  const digits = normalizePhoneInput(value);
-  return digits ? `+7${digits}` : "";
-}
-
-function applyRegisterServerError(form, message) {
-  const normalized = String(message || "").toLowerCase();
-
-  setFieldState(form, "email", "");
-  setFieldState(form, "phone", "");
-  setFieldState(form, "password", "");
-  setFieldState(form, "repeatPassword", "");
-
-  if (normalized.includes("почт")) {
-    setFieldState(form, "email", message);
-    return;
-  }
-
-  if (normalized.includes("телефон")) {
-    setFieldState(form, "phone", message);
-    return;
-  }
-
-  if (normalized.includes("парол")) {
-    setFieldState(form, "password", message);
-    return;
-  }
-
-  setFieldState(form, "email", message);
+  return [part1, part2, part3, part4].filter(Boolean).join(' ');
 }
 
 /**
- * Рендерит содержимое страницы регистрации и оборачивает его в публичный layout.
+ * Удаляет пробелы из пароля.
  *
- * @returns {Promise<string>} Сгенерированная строка HTML.
+ * @param {string} value Исходное значение пароля.
+ * @return {string} Нормализованное значение.
+ */
+function sanitizePasswordInput(value) {
+  return value.replace(/\s+/g, '');
+}
+
+/**
+ * Раскладывает серверную ошибку регистрации по полям формы.
+ *
+ * @param {HTMLFormElement} form Элемент формы регистрации.
+ * @param {string} message Текст ошибки от сервера.
+ * @return {void}
+ */
+function applyRegisterServerError(form, message) {
+  const normalized = String(message || '').toLowerCase();
+
+  setFieldState(form, 'email', '');
+  setFieldState(form, 'phone', '');
+  setFieldState(form, 'password', '');
+  setFieldState(form, 'repeatPassword', '');
+
+  if (normalized.includes('почт')) {
+    setFieldState(form, 'email', message);
+    return;
+  }
+
+  if (normalized.includes('телефон')) {
+    setFieldState(form, 'phone', message);
+    return;
+  }
+
+  if (normalized.includes('парол')) {
+    setFieldState(form, 'password', message);
+    return;
+  }
+
+  setFieldState(form, 'email', message);
+}
+
+/**
+ * Рендерит содержимое страницы регистрации и оборачивает его в layout.
+ *
+ * @return {Promise<string>} Сгенерированная строка HTML.
  */
 export async function renderRegisterPage() {
   const emailField = await renderFormField({
-    id: "register-email",
-    name: "email",
-    type: "email",
-    label: "Электронная почта",
-    placeholder: "Ваша почта",
-    required: true
+    id: 'register-email',
+    name: 'email',
+    type: 'email',
+    label: 'Электронная почта',
+    placeholder: 'Ваша почта',
+    required: true,
   });
 
   const phoneField = await renderFormField({
-    id: "register-phone",
-    name: "phone",
-    type: "text",
-    label: "Телефон",
-    placeholder: "999 123 45 67",
-    prefix: "+7",
-    required: true
+    id: 'register-phone',
+    name: 'phone',
+    type: 'text',
+    label: 'Телефон',
+    placeholder: '999 123 45 67',
+    prefix: '+7',
+    required: true,
   });
 
   const passwordField = await renderFormField({
-    id: "register-password",
-    name: "password",
-    type: "password",
-    label: "Пароль",
-    placeholder: "Введите ваш пароль",
-    required: true
+    id: 'register-password',
+    name: 'password',
+    type: 'password',
+    label: 'Пароль',
+    placeholder: 'Введите ваш пароль',
+    required: true,
   });
 
   const repeatPasswordField = await renderFormField({
-    id: "register-password-repeat",
-    name: "repeatPassword",
-    type: "password",
-    label: "Повторите пароль",
-    placeholder: "Повторите ваш пароль",
-    required: true
+    id: 'register-password-repeat',
+    name: 'repeatPassword',
+    type: 'password',
+    label: 'Повторите пароль',
+    placeholder: 'Повторите ваш пароль',
+    required: true,
   });
 
   const submitButton = await renderButton({
-    text: "Зарегистрироваться",
-    type: "submit",
-    variant: "primary"
+    text: 'Зарегистрироваться',
+    type: 'submit',
+    variant: 'primary',
   });
 
   const loginLinkButton = await renderButton({
-    text: "Войти в существующий аккаунт",
-    href: "#/login",
-    variant: "secondary"
+    text: 'Войти в существующий аккаунт',
+    href: '#/login',
+    variant: 'secondary',
   });
 
-  const content = await renderTemplate("./pages/register/register.hbs", {
+  const content = await renderTemplate('./pages/register/register.hbs', {
     emailField,
     phoneField,
     passwordField,
     repeatPasswordField,
     submitButton,
-    loginLinkButton
+    loginLinkButton,
   });
 
-  return await renderPublicLayout(content, "/register");
+  return await renderPublicLayout(content, '/register');
 }
 
 /**
  * Подключает валидацию и обработчики submit для формы регистрации.
  *
- * @returns {void}
+ * @return {void}
  */
 export function initRegisterPage() {
-  const form = document.getElementById("register-form");
+  const form = document.getElementById('register-form');
 
   if (!form) {
     return;
@@ -146,53 +166,82 @@ export function initRegisterPage() {
   initPasswordVisibilityToggles(form);
 
   const submitButton = form.querySelector('button[type="submit"]');
-  const SUBMIT_DEBOUNCE_MS = 400;
+  const submitDebounceMs = 400;
   let submitDebounceTimer = null;
   let isSubmitting = false;
 
+  /**
+   * Валидирует email.
+   *
+   * @return {boolean} Успешна ли валидация.
+   */
   function validateEmailField() {
     const error = validateEmail(form.elements.email.value);
-    setFieldState(form, "email", error);
+    setFieldState(form, 'email', error);
     return !error;
   }
 
+  /**
+   * Валидирует телефон.
+   *
+   * @return {boolean} Успешна ли валидация.
+   */
   function validatePhoneField() {
-    const error = validatePhone(toFullPhone(form.elements.phone.value));
-    setFieldState(form, "phone", error);
+    const error = validatePhone(form.elements.phone.value);
+    setFieldState(form, 'phone', error);
     return !error;
   }
 
+  /**
+   * Валидирует пароль.
+   *
+   * @return {boolean} Успешна ли валидация.
+   */
   function validatePasswordField() {
     const error = validatePassword(form.elements.password.value);
-    setFieldState(form, "password", error);
+    setFieldState(form, 'password', error);
     return !error;
   }
 
+  /**
+   * Валидирует подтверждение пароля.
+   *
+   * @return {boolean} Успешна ли валидация.
+   */
   function validateRepeatPasswordField() {
     const error = validateRepeatPassword(
-      form.elements.password.value,
-      form.elements.repeatPassword.value
+        form.elements.password.value,
+        form.elements.repeatPassword.value,
     );
 
-    setFieldState(form, "repeatPassword", error);
+    setFieldState(form, 'repeatPassword', error);
     return !error;
   }
 
-  form.elements.email.addEventListener("input", validateEmailField);
-  form.elements.phone.addEventListener("input", () => {
+  form.elements.email.addEventListener('input', validateEmailField);
+  form.elements.phone.addEventListener('input', () => {
     form.elements.phone.value = formatPhoneInput(form.elements.phone.value);
     validatePhoneField();
   });
-  form.elements.password.addEventListener("input", () => {
-    form.elements.password.value = sanitizePasswordInput(form.elements.password.value);
+  form.elements.password.addEventListener('input', () => {
+    form.elements.password.value = sanitizePasswordInput(
+        form.elements.password.value,
+    );
     validatePasswordField();
     validateRepeatPasswordField();
   });
-  form.elements.repeatPassword.addEventListener("input", () => {
-    form.elements.repeatPassword.value = sanitizePasswordInput(form.elements.repeatPassword.value);
+  form.elements.repeatPassword.addEventListener('input', () => {
+    form.elements.repeatPassword.value = sanitizePasswordInput(
+        form.elements.repeatPassword.value,
+    );
     validateRepeatPasswordField();
   });
 
+  /**
+   * Отправляет форму регистрации после клиентской валидации.
+   *
+   * @return {Promise<void>} Завершение обработки submit.
+   */
   async function handleRegisterSubmit() {
     if (isSubmitting) {
       return;
@@ -203,7 +252,12 @@ export function initRegisterPage() {
     const isPasswordValid = validatePasswordField();
     const isRepeatPasswordValid = validateRepeatPasswordField();
 
-    if (!isEmailValid || !isPhoneValid || !isPasswordValid || !isRepeatPasswordValid) {
+    if (
+      !isEmailValid ||
+      !isPhoneValid ||
+      !isPasswordValid ||
+      !isRepeatPasswordValid
+    ) {
       return;
     }
 
@@ -213,10 +267,11 @@ export function initRegisterPage() {
     }
 
     try {
+      const normalizedPhone = normalizePhone(form.elements.phone.value);
       const result = await registerUser({
         email: form.elements.email.value,
-        phone: toFullPhone(form.elements.phone.value),
-        password: form.elements.password.value
+        phone: normalizedPhone,
+        password: form.elements.password.value,
       });
 
       if (!result.ok) {
@@ -224,7 +279,7 @@ export function initRegisterPage() {
         return;
       }
 
-      location.hash = "#/ads";
+      location.hash = '#/ads';
     } finally {
       isSubmitting = false;
       if (submitButton) {
@@ -233,12 +288,12 @@ export function initRegisterPage() {
     }
   }
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener('submit', (event) => {
     event.preventDefault();
 
     clearTimeout(submitDebounceTimer);
     submitDebounceTimer = setTimeout(() => {
       handleRegisterSubmit();
-    }, SUBMIT_DEBOUNCE_MS);
+    }, submitDebounceMs);
   });
 }

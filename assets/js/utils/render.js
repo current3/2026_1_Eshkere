@@ -1,8 +1,8 @@
 /**
- * Загружает файл шаблона Handlebars с диска/сервера.
+ * Загружает файл шаблона Handlebars с диска или сервера.
  *
- * @param {string} path - Путь к шаблону.
- * @returns {Promise<string>} Исходный текст шаблона.
+ * @param {string} path Путь к шаблону.
+ * @return {Promise<string>} Исходный текст шаблона.
  * @throws {Error} Если шаблон не удалось загрузить.
  */
 export async function loadTemplate(path) {
@@ -18,9 +18,10 @@ export async function loadTemplate(path) {
 /**
  * Компилирует и рендерит шаблон Handlebars с входными данными.
  *
- * @param {string} path - Путь к шаблону.
- * @param {Record<string, unknown>} [data={}] - Контекст данных, передаваемый в шаблон.
- * @returns {Promise<string>} Сгенерированная строка HTML.
+ * @param {string} path Путь к шаблону.
+ * @param {Record<string, unknown>} [data={}] Контекст данных,
+ *     передаваемый в шаблон.
+ * @return {Promise<string>} Сгенерированная строка HTML.
  */
 export async function renderTemplate(path, data = {}) {
   const templateSource = await loadTemplate(path);
